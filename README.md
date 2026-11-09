@@ -101,7 +101,7 @@ Exemplo:
 
 ```env
 GEMINI_API_KEY=sua_chave_aqui
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
 Substitua `sua_chave_aqui` pela sua chave real.
