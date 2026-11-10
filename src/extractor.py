@@ -1,38 +1,7 @@
-import os
-
 from datetime import date
 
-from dotenv import load_dotenv
-from google import genai
 
-
-def main():
-    load_dotenv()
-
-    api_key = os.getenv("GEMINI_API_KEY")
-    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
-
-    client = genai.Client(api_key=api_key)
-
-    print("=" * 50)
-    print("                 COMUNICADO AI")
-    print("=" * 50)
-
-    print("\nDigite o comunicado acadêmico abaixo.")
-    print("Pressione ENTER em uma linha vazia para finalizar.\n")
-
-    linhas = []
-
-    while True:
-        linha = input()
-
-        if linha == "":
-            break
-
-        linhas.append(linha)
-
-    comunicado = "\n".join(linhas)
-
+def build_prompt(comunicado):
     data_atual = date.today().strftime("%d/%m/%Y")
 
     prompt = f"""
@@ -107,16 +76,4 @@ COMUNICADO A SER ANALISADO:
 </COMUNICADO>
 """
 
-    response = client.models.generate_content(
-        model=model,
-        contents=prompt,
-    )
-
-    print("\n" + "=" * 50)
-    print("          INTERPRETAÇÃO DO COMUNICADO")
-    print("=" * 50 + "\n")
-
-    print(response.text)
-
-if __name__ == "__main__":
-    main()
+    return prompt
