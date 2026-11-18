@@ -14,38 +14,37 @@ def main():
 
     linhas = []
 
-    while True:
-        linha = input()
-
-        if linha == "":
-            break
-
-        linhas.append(linha)
-
-    comunicado = "\n".join(linhas)
-
-    # Validação da entrada
     try:
+        while True:
+            linha = input()
+
+            if linha == "":
+                break
+
+            linhas.append(linha)
+
+        comunicado = "\n".join(linhas)
+
+        # Valida a entrada
         comunicado = validate_input(comunicado)
-    except ValueError as erro:
-        print(f"\nErro de entrada: {erro}")
-        return
 
-    # Construção do prompt
-    prompt = build_prompt(comunicado)
+        # Constrói o prompt
+        prompt = build_prompt(comunicado)
 
-    # Comunicação com o Gemini
-    dados = generate_response(prompt)
+        # Solicita a interpretação ao Gemini
+        dados = generate_response(prompt)
 
-    # Validação da resposta
-    try:
+        # Valida a resposta
         dados = validate_response(dados)
-    except ValueError as erro:
-        print(f"\nErro na resposta da IA: {erro}")
-        return
 
-    # Apresentação
-    display_response(dados)
+        # Apresenta o resultado
+        display_response(dados)
+
+    except (ValueError, RuntimeError) as erro:
+        print(f"\n[ERRO] {erro}")
+
+    except (KeyboardInterrupt, EOFError):
+        print("\nOperação cancelada pelo usuário.")
 
 
 if __name__ == "__main__":
