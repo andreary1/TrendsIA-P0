@@ -54,4 +54,18 @@ def generate_response(prompt):
         )
     )
 
+    if not response.text:
+        raise ValueError(
+            "A IA retornou uma resposta vazia."
+        )
+
+    try:
+        dados = json.loads(response.text)
+    except json.JSONDecodeError as erro:
+        raise ValueError(
+            "A IA retornou um JSON inválido."
+        ) from erro
+
+    return dados
+
     return json.loads(response.text)

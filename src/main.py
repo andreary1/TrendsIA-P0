@@ -1,10 +1,10 @@
 from .extractor import build_prompt
 from .formatter import display_response
 from .client import generate_response
+from .validators import validate_input, validate_response
 
 
 def main():
-    # Apresentação do programa
     print("=" * 50)
     print("                 COMUNICADO AI")
     print("=" * 50)
@@ -12,7 +12,6 @@ def main():
     print("\nDigite o comunicado acadêmico abaixo.")
     print("Pressione ENTER em uma linha vazia para finalizar.\n")
 
-    # Captura a entrada do usuário
     linhas = []
 
     while True:
@@ -25,13 +24,27 @@ def main():
 
     comunicado = "\n".join(linhas)
 
-    # Constrói o prompt
+    # Validação da entrada
+    try:
+        comunicado = validate_input(comunicado)
+    except ValueError as erro:
+        print(f"\nErro de entrada: {erro}")
+        return
+
+    # Construção do prompt
     prompt = build_prompt(comunicado)
 
-    # Envia a solicitação ao Gemini
+    # Comunicação com o Gemini
     dados = generate_response(prompt)
 
-    # Apresenta as informações formatadas
+    # Validação da resposta
+    try:
+        dados = validate_response(dados)
+    except ValueError as erro:
+        print(f"\nErro na resposta da IA: {erro}")
+        return
+
+    # Apresentação
     display_response(dados)
 
 
