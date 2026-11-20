@@ -15,20 +15,20 @@ def main():
     print("=" * 50)
 
     print("\nDigite o comunicado acadêmico abaixo.")
-    print("Pressione ENTER em uma linha vazia para finalizar.\n")
+    print("Digite ou cole o comunicado acadêmico abaixo.")
+    print("Para finalizar, digite FIM em uma nova linha.\n")
 
     linhas = []
-
     try:
         while True:
             linha = input()
 
-            if linha == "":
+            if linha.strip() == "FIM":
                 break
 
             linhas.append(linha)
 
-        comunicado = "\n".join(linhas)
+            comunicado = "\n".join(linhas)
 
         # Validação da entrada
         comunicado = validate_input(comunicado)
