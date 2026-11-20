@@ -1,10 +1,15 @@
 from .extractor import build_prompt
 from .formatter import display_response
 from .client import generate_response
+from .logger import logger, setup_logging
 from .validators import validate_input, validate_response
 
 
 def main():
+    setup_logging()
+
+    logger.info("Aplicação iniciada.")
+
     print("=" * 50)
     print("                 COMUNICADO AI")
     print("=" * 50)
@@ -25,25 +30,35 @@ def main():
 
         comunicado = "\n".join(linhas)
 
-        # Valida a entrada
+        # Validação da entrada
         comunicado = validate_input(comunicado)
+        logger.info("Entrada validada.")
 
-        # Constrói o prompt
+        # Construção do prompt
         prompt = build_prompt(comunicado)
 
-        # Solicita a interpretação ao Gemini
+        # Comunicação com o Gemini
         dados = generate_response(prompt)
 
-        # Valida a resposta
+        # Validação da resposta
         dados = validate_response(dados)
+        logger.info("Resposta validada.")
 
-        # Apresenta o resultado
+        # Apresentação
         display_response(dados)
 
-    except (ValueError, RuntimeError) as erro:
+        logger.info("Processamento concluído.")
+
+    except ValueError:
+        logger.warning("Falha na validação dos dados.")
+        print("\n[ERRO] Entrada ou resposta inválida.")
+
+    except RuntimeError as erro:
+        logger.error("Falha durante o processamento.")
         print(f"\n[ERRO] {erro}")
 
     except (KeyboardInterrupt, EOFError):
+        logger.warning("Execução interrompida pelo usuário.")
         print("\nOperação cancelada pelo usuário.")
 
 
