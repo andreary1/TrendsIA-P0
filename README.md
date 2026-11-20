@@ -30,10 +30,13 @@ Além da interpretação dos comunicados, a aplicação realiza validações de 
 
 - Python 3.10 ou superior.
 - Google Gemini API.
-- Modelo Gemini 3.5 Flash-Lite.
+- Modelo Gemini 3.5 Flash-Lite (`gemini-3.5-flash-lite`; conferir o identificador em `src/config.py` e no `.env`).
 - Biblioteca `google-genai`.
 - Biblioteca `python-dotenv`.
 - Biblioteca `httpx`.
+- Biblioteca `pytest` para testes automatizados.
+- Biblioteca nativa `logging` para registro de eventos.
+- Biblioteca nativa `unicodedata` para normalização de textos nos testes.
 - JSON para representação estruturada das informações.
 - Git e GitHub para versionamento.
 
@@ -47,10 +50,17 @@ TrendsIA-P0/
 │   ├── __init__.py
 │   ├── main.py
 │   ├── config.py
-│   ├── llm_client.py
+│   ├── client.py
 │   ├── extractor.py
 │   ├── formatter.py
-│   └── validators.py
+│   ├── validators.py
+│   └── logger.py
+├── tests/
+│   ├── test_validators.py
+│   ├── test_config.py
+│   ├── test_extractor.py
+│   └── test_client.py
+├── RELATORIO_EXECUCAO.md
 ├── requirements.txt
 ├── .env.example
 ├── .gitignore
@@ -60,11 +70,14 @@ TrendsIA-P0/
 **Descrição dos arquivos:**
 
 - `src/main.py`: coordena o fluxo principal da aplicação e recebe os comunicados pelo terminal.
-- `src/config.py`: carrega as configurações armazenadas nas variáveis de ambiente.
-- `src/llm_client.py`: realiza a comunicação com a API do Gemini, solicita respostas estruturadas e trata falhas de comunicação.
+- `src/config.py`: carrega e valida as configurações armazenadas nas variáveis de ambiente, incluindo os parâmetros do modelo.
+- `src/client.py`: realiza a comunicação com a API do Gemini, solicita respostas estruturadas e trata falhas de comunicação.
 - `src/extractor.py`: constrói o prompt utilizado para interpretar os comunicados acadêmicos.
 - `src/formatter.py`: organiza e apresenta as informações extraídas no terminal.
 - `src/validators.py`: valida os comunicados recebidos e a estrutura das respostas.
+- `src/logger.py`: configura os registros de execução da aplicação.
+- `tests/`: contém os testes automatizados de validação, configuração, construção do prompt e comunicação simulada com a API.
+- `RELATORIO_EXECUCAO.md`: reúne o registro da execução, dos testes e dos resultados efetivamente obtidos.
 - `src/__init__.py`: identifica o diretório `src` como um pacote Python.
 - `requirements.txt`: relaciona as dependências necessárias para executar o projeto.
 - `.env.example`: apresenta as variáveis de ambiente utilizadas pela aplicação.
@@ -112,7 +125,10 @@ O arquivo `requirements.txt` deve conter as dependências utilizadas pela aplica
 google-genai
 python-dotenv
 httpx
+pytest
 ```
+
+As bibliotecas `logging` e `unicodedata` fazem parte da biblioteca padrão do Python e não precisam ser instaladas separadamente.
 
 ## 6. Configuração da API
 
@@ -127,11 +143,26 @@ Exemplo:
 ```env
 GEMINI_API_KEY=sua_chave_aqui
 GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_TEMPERATURE=0.2
+GEMINI_MAX_OUTPUT_TOKENS=2048
+GEMINI_TIMEOUT_MS=30000
 ```
 
 Substitua `sua_chave_aqui` pela sua chave real.
 
-O modelo padrão utilizado é o `gemini-3.5-flash-lite`.
+O identificador `gemini-3.5-flash-lite` foi mantido conforme a documentação original. Confira se ele corresponde ao modelo configurado em `src/config.py` e no `.env`, bem como à disponibilidade na API utilizada.
+
+**Parâmetros de configuração:**
+
+| Variável | Valor do exemplo | Finalidade |
+|---|---|---|
+| `GEMINI_API_KEY` | `sua_chave_aqui` | Chave de acesso à API do Gemini. |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | Identificador do modelo utilizado nas requisições. |
+| `GEMINI_TEMPERATURE` | `0.2` | Controla a aleatoriedade das respostas; valores menores tendem a reduzir a variação. |
+| `GEMINI_MAX_OUTPUT_TOKENS` | `2048` | Define o limite de tokens da resposta gerada. |
+| `GEMINI_TIMEOUT_MS` | `30000` | Define o tempo máximo da requisição em milissegundos, equivalente a 30 segundos. |
+
+Os parâmetros são carregados e validados pelo módulo `src/config.py` e utilizados pelo cliente do Gemini. O limite de tokens não corresponde a uma quantidade fixa de palavras, e uma temperatura baixa não garante respostas idênticas ou livres de imprecisões.
 
 **Importante:** o arquivo `.env` contém informações sensíveis e não deve ser compartilhado ou enviado ao GitHub.
 
@@ -247,7 +278,7 @@ O processamento ocorre nas seguintes etapas:
 2. O programa recebe o comunicado acadêmico.
 3. A entrada é validada para impedir o envio de textos vazios.
 4. O texto é incorporado a um prompt especializado.
-5. A aplicação envia a solicitação à API do Gemini.
+5. A aplicação envia a solicitação à API do Gemini utilizando o modelo, a temperatura, o limite de tokens e o timeout configurados.
 6. O modelo interpreta o comunicado e retorna uma resposta estruturada em JSON.
 7. O programa converte o JSON em um dicionário Python.
 8. A estrutura da resposta é validada.
@@ -297,6 +328,42 @@ A aplicação apresenta mensagens compreensíveis para diferentes situações de
 
 O objetivo é evitar que falhas operacionais previstas sejam apresentadas diretamente ao usuário como mensagens técnicas do Python.
 
+### 9.3. Registros de execução
+
+A aplicação utiliza a biblioteca nativa `logging`, configurada em `src/logger.py`, para registrar eventos operacionais e auxiliar na identificação de falhas.
+
+Os logs registram o andamento da execução e situações de erro sem armazenar a chave da API, o conteúdo dos comunicados ou as respostas completas do modelo.
+
+### 9.4. Testes automatizados
+
+O ComunicadoAI utiliza o framework `pytest` para verificar os principais componentes da aplicação.
+
+Os testes estão organizados no diretório `tests/` e abrangem:
+
+- Validação de entradas e da estrutura das respostas.
+- Carregamento e validação dos parâmetros de configuração.
+- Construção do prompt e presença das categorias esperadas.
+- Simulação de respostas válidas, inválidas e falhas na comunicação com o Gemini.
+- Comportamento diante da ausência de chave de API.
+
+Os testes utilizam mocks e `monkeypatch` para simular a comunicação com a API, sem realizar requisições reais e sem exigir uma chave de API válida. A normalização com `unicodedata` permite verificar os títulos do prompt independentemente de maiúsculas e acentuação.
+
+Com o ambiente virtual ativado e as dependências instaladas, execute na raiz do projeto:
+
+```bash
+python -m pytest -v
+```
+
+Para executar apenas os testes de construção do prompt:
+
+```bash
+python -m pytest tests/test_extractor.py -v
+```
+
+Os testes com respostas simuladas verificam o comportamento local da aplicação, mas não comprovam a disponibilidade da API nem a qualidade das interpretações em chamadas reais.
+
+Os resultados efetivamente obtidos devem ser registrados no `RELATORIO_EXECUCAO.md`, incluindo a quantidade de testes aprovados, falhas, avisos e versões utilizadas. Este README não declara resultados de testes nem validação em ambiente limpo sem evidências de execução.
+
 ## 10. Limitações
 
 Apesar das melhorias implementadas, a aplicação ainda possui algumas limitações:
@@ -306,8 +373,8 @@ Apesar das melhorias implementadas, a aplicação ainda possui algumas limitaç�
 - Datas relativas podem ser interpretadas incorretamente quando o contexto é ambíguo.
 - A validação JSON verifica a estrutura dos dados, mas não garante a veracidade das informações.
 - O sistema não realiza verificação automática dos prazos em calendários acadêmicos.
-- Os parâmetros de geração ainda não são configuráveis pelo usuário por meio de variáveis de ambiente.
-- Ainda não possui uma suíte de testes automatizados.
+- Os testes com respostas simuladas não substituem a verificação da integração real com o Gemini.
+- O limite de tokens pode interromper respostas extensas e comprometer a estrutura JSON retornada.
 
 As informações extraídas devem ser conferidas com o comunicado original, especialmente quando envolverem prazos importantes.
 
@@ -344,16 +411,23 @@ Reorganização da aplicação e implementação de mecanismos para tornar sua e
 
 ### Avançado (`p0-avancado`)
 
-Etapa destinada à ampliação da configurabilidade, testabilidade e rastreabilidade da aplicação.
+Ampliação da configurabilidade, testabilidade e rastreabilidade da aplicação.
 
-**Funcionalidades previstas:**
+**Funcionalidades implementadas:**
 
-- Configuração de parâmetros do modelo.
-- Implementação de logs seguros.
-- Criação de testes automatizados.
-- Simulação de falhas sem utilizar a API real.
-- Validação da instalação e execução em um ambiente limpo.
-- Elaboração do relatório final de execução.
+- Configuração de temperatura, limite de tokens e timeout por variáveis de ambiente.
+- Implementação de logs seguros com `logging` e `src/logger.py`.
+- Criação de testes automatizados com `pytest` no diretório `tests/`.
+- Simulação de respostas e falhas da API com mocks e `monkeypatch`, sem requisições reais.
+- Atualização das instruções de configuração, execução e testes.
+
+**Verificações para conclusão da entrega:**
+
+- Executar a suíte e registrar os resultados reais no `RELATORIO_EXECUCAO.md`.
+- Verificar a instalação e a execução em ambiente limpo e documentar o resultado.
+- Consolidar o relatório final com as evidências obtidas.
+
+A implementação dos recursos não equivale à comprovação dessas verificações.
 
 Cada nível é identificado por uma tag no repositório Git após sua conclusão.
 
@@ -363,7 +437,7 @@ As credenciais da API são armazenadas em variáveis de ambiente e não são inc
 
 O arquivo `.env` é ignorado pelo Git, enquanto o `.env.example` apresenta apenas as variáveis necessárias para configurar a aplicação.
 
-A aplicação também evita incluir a chave de API nas mensagens de erro apresentadas ao usuário.
+A aplicação também evita incluir a chave de API nas mensagens de erro apresentadas ao usuário. Os registros de execução não devem expor credenciais, o conteúdo dos comunicados ou as respostas completas do modelo.
 
 Os comunicados enviados ao programa são processados por um serviço externo de IA. Por isso, recomenda-se não inserir informações pessoais ou confidenciais.
 
@@ -373,8 +447,10 @@ Entretanto, essas instruções não garantem proteção absoluta contra interpre
 
 ## 13. Estado do desenvolvimento
 
-**Versão intermediária implementada.**
+**Recursos da versão avançada implementados; verificações finais pendentes de comprovação.**
 
-O ComunicadoAI possui uma arquitetura modular, integração com o Gemini 3.5 Flash-Lite, extração estruturada em JSON, validação de entradas e respostas, apresentação formatada e tratamento de falhas operacionais previstas.
+O ComunicadoAI reúne arquitetura modular, integração com o Gemini, extração estruturada em JSON, validação de entradas e respostas, apresentação formatada, tratamento de falhas operacionais, parâmetros configuráveis, logs seguros e testes automatizados com `pytest`.
 
-As próximas etapas serão dedicadas à configuração de parâmetros, implementação de logs, testes automatizados e documentação final do projeto.
+O modelo documentado permanece `gemini-3.5-flash-lite`, sujeito à conferência com `src/config.py` e o `.env` utilizado na execução.
+
+A conclusão da entrega depende do registro dos resultados reais dos testes, da validação da instalação e execução em ambiente limpo e da consolidação do `RELATORIO_EXECUCAO.md`. Não são declarados aqui testes aprovados ou validações concluídas sem comprovação.
