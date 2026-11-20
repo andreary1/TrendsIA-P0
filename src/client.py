@@ -4,7 +4,13 @@ import httpx
 from google import genai
 from google.genai import errors, types
 
-from .config import get_api_key, get_model
+from .config import (
+    get_api_key,
+    get_model,
+    get_temperature,
+    get_max_output_tokens,
+    get_timeout,
+)
 
 ANNOUNCEMENT_SCHEMA = {
     "type": "object",
@@ -49,16 +55,20 @@ def generate_response(prompt):
         )
 
     try:
-        with genai.Client(api_key=api_key) as client:
+        with genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(
+                timeout=get_timeout()
+            )
+        ) as client:
             response = client.models.generate_content(
                 model=get_model(),
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_json_schema=ANNOUNCEMENT_SCHEMA,
-                    http_options=types.HttpOptions(
-                        timeout=30000
-                    )
+                    temperature=get_temperature(),
+                    max_output_tokens=get_max_output_tokens()
                 )
             )
 
