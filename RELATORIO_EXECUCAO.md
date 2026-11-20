@@ -5,89 +5,108 @@
 **Projeto:** ComunicadoAI  
 **Repositório:** https://github.com/andreary1/TrendsIA-P0  
 **Linguagem:** Python  
-**Modelo de IA:** Gemini 3.5 Flash-Lite  
+**Modelo de IA:** Google Gemini  
 **Interface:** Terminal (CLI)
 
 ## 2. Objetivo
 
-O ComunicadoAI foi desenvolvido para interpretar comunicados acadêmicos escritos em linguagem natural e organizar suas principais informações em cinco categorias: resumo, tarefas, prazos, requisitos e observações.
+O ComunicadoAI foi desenvolvido para interpretar comunicados acadêmicos escritos em linguagem natural e organizar suas informações em cinco categorias: resumo, tarefas, prazos, requisitos e observações.
 
-A aplicação utiliza um modelo de linguagem para interpretar o conteúdo, uma estrutura JSON para representar os resultados e mecanismos de validação para identificar respostas incompatíveis com o formato esperado.
+A aplicação utiliza um modelo de linguagem para interpretar os textos e retorna informações estruturadas em JSON, posteriormente validadas e apresentadas no terminal.
 
-## 3. Desenvolvimento
+## 3. Evolução por nível
 
-O projeto foi implementado em três níveis incrementais.
+O desenvolvimento foi organizado em três etapas incrementais, identificadas por tags no repositório.
 
-### Nível básico
+### Básico (`p0-basico`)
 
-Implementação da primeira versão funcional, incluindo entrada de comunicados pelo terminal, integração com a API do Gemini, construção do prompt e apresentação dos resultados.
+Foi implementada a primeira versão funcional, com entrada de comunicados pelo terminal, integração com a API do Gemini, construção de um prompt especializado e apresentação das informações extraídas.
 
-### Nível intermediário
+### Intermediário (`p0-intermediario`)
 
-Refatoração da aplicação em módulos independentes, extração estruturada em JSON, validação de entradas e respostas e tratamento de falhas relacionadas à API.
+A aplicação foi reorganizada em módulos independentes. Foram acrescentadas respostas estruturadas em JSON, validação de entradas e respostas e tratamento de falhas de autenticação, conexão e indisponibilidade da API.
 
-### Nível avançado
+### Avançado (`p0-avancado`)
 
-Implementação de parâmetros configuráveis para o modelo, registros de execução com a biblioteca `logging` e testes automatizados com `pytest`.
+Foram implementados parâmetros configuráveis para temperatura, limite de tokens e timeout, registros de execução com `logging` e testes automatizados com `pytest`, incluindo simulações da API.
 
-Os testes utilizam simulações para verificar o comportamento da aplicação sem depender de chamadas reais ao Gemini.
+Também foi corrigida a leitura de comunicados com múltiplos parágrafos, permitindo preservar linhas vazias por meio do marcador de encerramento `FIM`.
 
-## 4. Arquitetura
+## 4. Decisões principais
 
-O código-fonte está organizado no pacote `src`, com responsabilidades separadas:
+| Decisão tomada | Alternativa considerada | Justificativa |
+|---|---|---|
+| Utilizar Google Gemini | Extração por expressões regulares e regras fixas | Interpretar comunicados com diferentes estruturas e construções de linguagem natural. |
+| Solicitar respostas em JSON | Receber respostas em texto livre | Facilitar a validação, organização e apresentação das informações. |
+| Utilizar pytest com simulações da API | Depender exclusivamente de requisições reais | Permitir testes reproduzíveis sem depender da conexão ou da disponibilidade do serviço. |
+| Utilizar o marcador `FIM` | Encerrar a entrada ao encontrar uma linha vazia | Permitir a inserção de textos com múltiplos parágrafos sem interromper a leitura. |
 
-- `main.py`: coordenação da execução.
-- `config.py`: carregamento e validação das configurações.
-- `extractor.py`: construção do prompt.
-- `llm_client.py`: comunicação com o Gemini e tratamento de falhas.
-- `validators.py`: validação de entradas e respostas.
-- `formatter.py`: apresentação dos resultados.
-- `logger.py`: configuração dos logs.
+## 5. Testes e resultados
 
-Os testes automatizados estão organizados no diretório `tests`.
+Os testes automatizados foram desenvolvidos com `pytest` e utilizam simulações para verificar componentes da aplicação sem realizar requisições reais ao Gemini.
 
-## 5. Testes e validação
+| Teste | Entrada ou situação | Resultado esperado | Resultado obtido |
+|---|---|---|---|
+| Validação de entrada | Comunicado vazio | Rejeitar entrada inválida | Aprovado |
+| Validação de resposta | JSON com estrutura incompatível | Identificar resposta inválida | Aprovado |
+| Configuração | Parâmetros inválidos | Rejeitar configurações incorretas | Aprovado |
+| Construção do prompt | Comunicado válido | Incluir as categorias necessárias | Aprovado |
+| Comunicação simulada | Resposta válida da API | Processar o JSON retornado | Aprovado |
+| Falha simulada | Erro de comunicação com a API | Apresentar tratamento de erro | Aprovado |
+| Entrada multiline | Comunicado com linhas vazias | Preservar o texto até o marcador `FIM` | Aprovado em teste manual |
 
-Os testes automatizados foram desenvolvidos com `pytest` e abrangem validações de entrada, estrutura das respostas, configurações, construção do prompt e comportamento do cliente da API diante de respostas simuladas.
+**Resultados registrados:**
 
-**Comando de execução:**
+- **Testes automatizados:** 21 aprovados, sem falhas na execução anteriormente registrada.
+- **Validação após a correção:** suíte executada novamente com sucesso.
+- **Teste manual:** leitura de comunicado com múltiplos parágrafos validada.
+- **Python:** 3.14.2.
+- **pytest:** 9.2.0.
+- **Ambiente limpo:** validação ainda pendente.
 
-`python -m pytest -v`
+Os testes simulados verificam o comportamento do código, mas não comprovam a disponibilidade da API ou a precisão das interpretações em chamadas reais.
 
-**Resultado da execução:** 21 testes aprovados, 0 falhas e nenhum aviso reportado. Execução em 20/11/2026, com duração de 1,21 segundo.
+## 6. Falhas e limitações
 
-**Versão do Python:** Python 3.14.2
+### 6.1. Falha identificada e corrigida
 
-**Versão do pytest:** pytest 9.2.0
+Durante um teste manual, foi identificado que a aplicação encerrava a leitura de comunicados ao encontrar uma linha vazia. Ao colar um texto com múltiplos parágrafos, apenas o primeiro trecho era processado, e as linhas restantes podiam ser interpretadas pelo terminal como comandos.
 
-**Validação em ambiente limpo:** Pendente. Os testes foram executados no ambiente virtual existente do projeto.
+A falha foi identificada ao testar um comunicado sobre a entrega de um trabalho e uma avaliação acadêmica.
 
-Além dos testes automatizados, recomenda-se verificar manualmente a interpretação de comunicados reais ou fictícios com diferentes estruturas e prazos.
+Para corrigir o problema, a lógica de entrada foi modificada para utilizar o marcador `FIM` em uma linha isolada. A correção foi verificada por meio de teste manual, e a suíte automatizada foi executada novamente sem falhas.
 
-## 6. Segurança
+### 6.2. Limitações conhecidas
 
-As credenciais da API são configuradas por variáveis de ambiente e não são incluídas no repositório.
+A aplicação depende de conexão com a internet e da disponibilidade da API do Gemini. Além disso, a validação da estrutura JSON não garante a precisão das informações extraídas.
 
-Os logs registram eventos operacionais sem armazenar o conteúdo dos comunicados, as respostas do modelo ou a chave da API.
+Datas ambíguas e orientações incompletas ainda exigem conferência com o comunicado original.
 
-Os comunicados são enviados a um serviço externo de inteligência artificial, portanto não devem conter informações confidenciais.
+## 7. Uso de IA no desenvolvimento
 
-## 7. Limitações
+O ChatGPT foi utilizado como ferramenta de apoio ao planejamento, à implementação, aos testes e à documentação do projeto.
 
-O sistema depende da disponibilidade do Gemini e de uma conexão com a internet para interpretar comunicados.
+| Tarefa delegada | Resultado aproveitado | Correções ou alterações realizadas | Forma de verificação |
+|---|---|---|---|
+| Organização da arquitetura | Separação do código em módulos independentes | Adaptação da estrutura às funcionalidades do projeto | Revisão dos módulos e execução da aplicação |
+| Integração com o Gemini | Exemplos de comunicação com a API e tratamento de erros | Ajustes nos parâmetros e na estrutura das respostas | Execução e testes da aplicação |
+| Desenvolvimento de testes | Casos de teste com pytest | Correção da comparação de textos com diferenças de maiúsculas e acentuação | Execução da suíte automatizada |
+| Documentação | Estruturação do README e do relatório | Revisão conforme os requisitos da atividade e a implementação | Conferência dos arquivos e comandos |
 
-Embora a resposta seja validada estruturalmente, isso não garante a precisão de todas as informações extraídas.
+As sugestões geradas por IA foram revisadas e adaptadas durante o desenvolvimento. A validação das funcionalidades foi realizada por meio de testes automatizados e manuais.
 
-Datas ambíguas e orientações incompletas devem ser conferidas com o comunicado original.
+## 8. Reflexão final
 
-## 8. Resultado final
+O principal aprendizado foi compreender como integrar um modelo de linguagem a uma aplicação Python, considerando não apenas a geração de respostas, mas também a validação dos dados, o tratamento de falhas e a organização do código.
 
-O ComunicadoAI reúne os componentes previstos nos três níveis do projeto: integração com LLM, interpretação estruturada, validações, tratamento de erros, parâmetros configuráveis, logs e testes automatizados.
+A competência mais desenvolvida foi a construção de uma aplicação modular e testável, especialmente com a utilização de testes automatizados e simulações de serviços externos.
 
-A aplicação demonstra a utilização de um modelo de linguagem integrado a um programa Python, com organização modular e mecanismos básicos de robustez e testabilidade.
+Como aspecto a aprimorar, destaca-se a ampliação dos testes de integração real com o Gemini e a implementação de mecanismos adicionais para verificar a precisão das informações extraídas.
 
 ## 9. Demonstração
 
-**Vídeo de execução:** Ainda será gravado
+**Vídeo de execução:** Ainda será adicionado
 
-**Versão final:** `p0-avancado`
+**Repositório:** https://github.com/andreary1/TrendsIA-P0
+
+**Versão:** `p0-avancado`
