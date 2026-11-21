@@ -443,7 +443,7 @@ Entretanto, essas instruções não garantem proteção absoluta contra interpre
 
 ## 13. Demonstração
 
-**Vídeo de apresentação e execução:** [Adicionar link do vídeo]
+**Vídeo de apresentação e execução:** https://youtu.be/9TKP4GoF1LI
 
 O vídeo deverá demonstrar a execução do ComunicadoAI, a entrada de um comunicado acadêmico e a apresentação das informações extraídas.
 

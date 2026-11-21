@@ -105,7 +105,7 @@ Como aspecto a aprimorar, destaca-se a ampliação dos testes de integração re
 
 ## 9. Demonstração
 
-**Vídeo de execução:** Ainda será adicionado
+**Vídeo de execução:** https://youtu.be/9TKP4GoF1LI
 
 **Repositório:** https://github.com/andreary1/TrendsIA-P0
 
